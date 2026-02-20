@@ -1,4 +1,4 @@
-name: 通用 低端机 clang12 简化配置 v5
+name: 通用 低端
 on:
   workflow_dispatch:
 

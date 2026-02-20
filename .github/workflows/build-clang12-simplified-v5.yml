@@ -69,7 +69,14 @@ jobs:
       run: |
         cd $GITHUB_WORKSPACE/kernel_workspace/android-kernel
         curl -LSs "https://raw.githubusercontent.com/AlbWud/SukiSU-Ultra/main/kernel/setup.sh" | bash -s nongki
-        
+    
+    - name: 修复 4.4 内核兼容性 (屏蔽 MODULE_IMPORT_NS)
+      run: |
+        cd $GITHUB_WORKSPACE/kernel_workspace/android-kernel
+        # 找到包含 MODULE_IMPORT_NS 的行并注释掉
+        sed -i 's/MODULE_IMPORT_NS(/\/\/ MODULE_IMPORT_NS(/g' drivers/kernelsu/ksu.c
+        echo "已修复 ksu.c 中的 MODULE_IMPORT_NS 报错"
+
     - name: 设置ccache缓存
       uses: hendrikmuhs/ccache-action@v1.2
       with:

@@ -43,6 +43,16 @@ jobs:
         cd $GITHUB_WORKSPACE/kernel_workspace
         git clone ${{ env.KERNEL_SOURCE }} -b ${{ env.KERNEL_SOURCE_BRANCH }} android-kernel --depth=1
 
+    - name: Patch KernelSU-Next for legacy kernel
+      run: |
+        cd kernel_workspace/android-kernel/drivers/kernelsu
+        # 检查是否存在 allowlist.c 并替换头文件
+        if [ -f "allowlist.c" ]; then
+          sed -i 's/<linux\/compiler_types.h>/<linux\/compiler.h>/g' allowlist.c
+        fi
+        # 建议对其他可能受影响的文件也进行检查（可选）
+        grep -rl "linux/compiler_types.h" . | xargs sed -i 's/<linux\/compiler_types.h>/<linux\/compiler.h>/g' || true
+    
     - name: 开启lxc和docker配置
       if: env.ENABLE_LXC_DOCKER == 'true'
       run: |

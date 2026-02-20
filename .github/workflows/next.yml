@@ -45,13 +45,19 @@ jobs:
 
     - name: Patch KernelSU-Next for legacy kernel
       run: |
-        # 进入内核根目录
-        cd kernel_workspace/android-kernel
+        # 切换到工作区的根目录，确保能覆盖到所有下载的源码
+        cd $GITHUB_WORKSPACE/kernel_workspace/android-kernel
+
+        echo "Searching for KernelSU-Next files to patch..."
+
+        # 1. 修复 compiler_types.h 缺失问题
+        # 使用 -r 参数，如果 grep 没找到文件，xargs 就不会执行 sed，避免报错
+        find . -type f \( -name "*.c" -o -name "*.h" \) | xargs -r grep -l "linux/compiler_types.h" | xargs -r sed -i 's/<linux\/compiler_types.h>/<linux\/compiler.h>/g' || true
     
-        # 自动查找所有包含 compiler_types.h 的文件并替换为 compiler.h
-        # 这样无论 KernelSU-Next 在哪个子目录下都能被修正
-        find . -type f -name "*.c" -o -name "*.h" | xargs grep -l "linux/compiler_types.h" | xargs sed -i 's/<linux\/compiler_types.h>/<linux\/compiler.h>/g' || true
-        echo "Patch applied successfully."
+        # 2. 针对 4.4 内核额外修复 path_umount 缺失问题（预判修复）
+        find . -type f \( -name "*.c" -o -name "*.h" \) | xargs -r grep -l "path_umount" | xargs -r sed -i 's/path_umount/vfs_umount/g' || true
+    
+        echo "Patch process finished."
     
     - name: 开启lxc和docker配置
       if: env.ENABLE_LXC_DOCKER == 'true'
